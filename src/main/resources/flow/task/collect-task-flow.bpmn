@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:activiti="http://activiti.org/bpmn" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC" xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI" typeLanguage="http://www.w3.org/2001/XMLSchema" expressionLanguage="http://www.w3.org/1999/XPath" targetNamespace="http://www.activiti.org/test">
+  <process id="collect-task-flow" name="collect-task-flow" isExecutable="true">
+    <startEvent id="start-collect-task-event" name="Start" activiti:initiator="applyUserId"></startEvent>
+    <endEvent id="end-collect-task-event" name="End"></endEvent>
+    <userTask id="audit-collect-task-step" name="审核采集任务">
+      <extensionElements>
+        <activiti:taskListener event="create" class="com.jiang.activiti.delegate.CollectTaskNextDelegateHandler"></activiti:taskListener>
+      </extensionElements>
+    </userTask>
+    <userTask id="config-docker-info-step" name="配置docker信息" activiti:assignee="${applyUserId}"></userTask>
+    <userTask id="adjust-collect-task-step" name="调整采集任务" activiti:assignee="${applyUserId}"></userTask>
+    <exclusiveGateway id="audit-exclusive-gateway" name="Exclusive Gateway"></exclusiveGateway>
+    <exclusiveGateway id="adjust-exclusive-gateway" name="Exclusive Gateway"></exclusiveGateway>
+    <sequenceFlow id="flow1" sourceRef="start-collect-task-event" targetRef="audit-collect-task-step"></sequenceFlow>
+    <sequenceFlow id="flow2" sourceRef="audit-collect-task-step" targetRef="audit-exclusive-gateway"></sequenceFlow>
+    <sequenceFlow id="flow3" name="申请通过" sourceRef="audit-exclusive-gateway" targetRef="config-docker-info-step">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${auditSymbol==1}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="flow4" name="驳回申请" sourceRef="audit-exclusive-gateway" targetRef="adjust-collect-task-step">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${auditSymbol==2}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="flow5" name="流程结束" sourceRef="audit-exclusive-gateway" targetRef="end-collect-task-event">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${auditSymbol==3}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="flow6" name="流程结束" sourceRef="config-docker-info-step" targetRef="end-collect-task-event"></sequenceFlow>
+    <sequenceFlow id="flow7" sourceRef="adjust-collect-task-step" targetRef="adjust-exclusive-gateway"></sequenceFlow>
+    <sequenceFlow id="flow8" name="流程结束" sourceRef="adjust-exclusive-gateway" targetRef="end-collect-task-event">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${adjustSymbol==0}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="flow9" name="重新申请" sourceRef="adjust-exclusive-gateway" targetRef="audit-collect-task-step">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${adjustSymbol==1}]]></conditionExpression>
+    </sequenceFlow>
+  </process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_collect-task-flow">
+    <bpmndi:BPMNPlane bpmnElement="collect-task-flow" id="BPMNPlane_collect-task-flow">
+      <bpmndi:BPMNShape bpmnElement="start-collect-task-event" id="BPMNShape_start-collect-task-event">
+        <omgdc:Bounds height="35.0" width="35.0" x="60.0" y="230.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="end-collect-task-event" id="BPMNShape_end-collect-task-event">
+        <omgdc:Bounds height="35.0" width="35.0" x="980.0" y="230.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="audit-collect-task-step" id="BPMNShape_audit-collect-task-step">
+        <omgdc:Bounds height="55.0" width="105.0" x="200.0" y="220.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="config-docker-info-step" id="BPMNShape_config-docker-info-step">
+        <omgdc:Bounds height="55.0" width="105.0" x="550.0" y="80.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="adjust-collect-task-step" id="BPMNShape_adjust-collect-task-step">
+        <omgdc:Bounds height="55.0" width="105.0" x="550.0" y="350.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="audit-exclusive-gateway" id="BPMNShape_audit-exclusive-gateway">
+        <omgdc:Bounds height="40.0" width="40.0" x="410.0" y="227.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="adjust-exclusive-gateway" id="BPMNShape_adjust-exclusive-gateway">
+        <omgdc:Bounds height="40.0" width="40.0" x="820.0" y="357.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge bpmnElement="flow1" id="BPMNEdge_flow1">
+        <omgdi:waypoint x="95.0" y="247.0"></omgdi:waypoint>
+        <omgdi:waypoint x="200.0" y="247.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow2" id="BPMNEdge_flow2">
+        <omgdi:waypoint x="305.0" y="247.0"></omgdi:waypoint>
+        <omgdi:waypoint x="410.0" y="247.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow3" id="BPMNEdge_flow3">
+        <omgdi:waypoint x="430.0" y="227.0"></omgdi:waypoint>
+        <omgdi:waypoint x="430.0" y="107.0"></omgdi:waypoint>
+        <omgdi:waypoint x="550.0" y="107.0"></omgdi:waypoint>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="14.0" width="48.0" x="440.0" y="171.0"></omgdc:Bounds>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow4" id="BPMNEdge_flow4">
+        <omgdi:waypoint x="430.0" y="267.0"></omgdi:waypoint>
+        <omgdi:waypoint x="430.0" y="377.0"></omgdi:waypoint>
+        <omgdi:waypoint x="550.0" y="377.0"></omgdi:waypoint>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="14.0" width="48.0" x="440.0" y="309.0"></omgdc:Bounds>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow5" id="BPMNEdge_flow5">
+        <omgdi:waypoint x="450.0" y="247.0"></omgdi:waypoint>
+        <omgdi:waypoint x="980.0" y="247.0"></omgdi:waypoint>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="14.0" width="48.0" x="679.0" y="227.0"></omgdc:Bounds>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow6" id="BPMNEdge_flow6">
+        <omgdi:waypoint x="655.0" y="107.0"></omgdi:waypoint>
+        <omgdi:waypoint x="997.0" y="107.0"></omgdi:waypoint>
+        <omgdi:waypoint x="997.0" y="230.0"></omgdi:waypoint>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="14.0" width="48.0" x="809.0" y="90.0"></omgdc:Bounds>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow7" id="BPMNEdge_flow7">
+        <omgdi:waypoint x="655.0" y="377.0"></omgdi:waypoint>
+        <omgdi:waypoint x="820.0" y="377.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow8" id="BPMNEdge_flow8">
+        <omgdi:waypoint x="860.0" y="377.0"></omgdi:waypoint>
+        <omgdi:waypoint x="997.0" y="376.0"></omgdi:waypoint>
+        <omgdi:waypoint x="997.0" y="265.0"></omgdi:waypoint>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="14.0" width="48.0" x="999.0" y="311.0"></omgdc:Bounds>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow9" id="BPMNEdge_flow9">
+        <omgdi:waypoint x="840.0" y="397.0"></omgdi:waypoint>
+        <omgdi:waypoint x="840.0" y="508.0"></omgdi:waypoint>
+        <omgdi:waypoint x="252.0" y="508.0"></omgdi:waypoint>
+        <omgdi:waypoint x="252.0" y="275.0"></omgdi:waypoint>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="14.0" width="48.0" x="480.0" y="489.0"></omgdc:Bounds>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</definitions>
